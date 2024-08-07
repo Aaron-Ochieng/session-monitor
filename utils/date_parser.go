@@ -1,6 +1,8 @@
 package session
 
 import (
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -12,4 +14,11 @@ func GetDate() string {
 
 	// Format the current date
 	return currentDate.Format(format)
+}
+
+func GetTodaysDate(s string) int {
+	val := strings.Split(GetDate(), " ")
+
+	date, _ := strconv.Atoi(val[0])
+	return date
 }
