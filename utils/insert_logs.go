@@ -34,7 +34,7 @@ func InitDbTables() error {
 			username VARCHAR(20) NOT NULL UNIQUE
 			
 		);
-		CREATE TABLE IF NOT EXISTS userStats(
+		CREATE TABLE IF NOT EXISTS userlogs(
       id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 			macAddress VARCHAR(20) NOT NULL,
 			userId INTEGER NOT NULL,
@@ -89,4 +89,29 @@ func userId(username string) (id int) {
 		log.Fatalln(err)
 	}
 	return id
+}
+
+func InsertLogs(logs []LoginInfo, logsDate func()) {
+	db, _ = connection()
+	macAddress, _ := GetMacAddress()
+	for _, log := range logs {
+		userId := userId(log.Username)
+		_, err := db.ExecContext(
+			context.Background(),
+			`INSERT INTO userlogs
+      			(macAddress,userId,loginTime,logoutTime,date) 
+      			VALUES (?,?,?,?,?);`,
+			macAddress,
+			userId,
+			log.LoginTime,
+			log.LogoutTime,
+			log.Date,
+		)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	}
+	logsDate()
+	db.Close()
 }
