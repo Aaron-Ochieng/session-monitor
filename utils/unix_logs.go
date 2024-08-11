@@ -2,6 +2,7 @@ package session
 
 import (
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -42,9 +43,7 @@ func UnixLog() (logininfo []LoginInfo, err error) {
 		}
 		temp := LoginInfo{}
 		temp.Username = info[0]
-		temp.Date.Day = info[5]
-		temp.Date.Month = info[4]
-		temp.Date.Year = time.Now().Year()
+		temp.Date = info[5] + " " + info[4] + " " + strconv.Itoa(time.Now().Year())
 		temp.LoginTime = info[6]
 		temp.LogoutTime = info[8]
 		if info[8] == "logged" {
