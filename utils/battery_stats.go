@@ -2,17 +2,36 @@ package session
 
 import (
 	"fmt"
-	"os"
-	"strconv"
+	"os/exec"
+	"strings"
 )
 
-func BatteryStatus() (int, error) {
-	filepath := "/sys/class/power_supply/BAT0/capacity"
-	battery_capacity, err := os.ReadFile(filepath)
+type BatStats struct {
+	State       string
+	TimetoEmpty string
+	Percentage  string
+}
+
+func BatteryStatus() (stats BatStats) {
+	cmd := exec.Command("bash", "-c", `upower -i $(upower -e | grep BAT) | grep --color=never -E "state|to\ full|to\ empty|percentage"`)
+	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println(err)
-		return 0, nil
+		fmt.Println("Error executing command:", err)
+		return
 	}
-	val, _ := strconv.Atoi(string(battery_capacity))
-	return val, nil
+
+	res := strings.Split(string(output), "\n")
+
+	if len(res) == 4 {
+		stats.State = trimspace(res[0])[1]
+		stats.TimetoEmpty = trimspace(res[1])[3] + " " + trimspace(res[1])[4]
+		stats.Percentage = trimspace(res[2])[1]
+
+	} else if len(res) == 2 {
+		stats.State = trimspace(res[0])[1]
+		stats.TimetoEmpty = trimspace(res[1])[3] + " " + trimspace(res[1])[4]
+		stats.Percentage = trimspace(res[2])[1]
+
+	}
+	return stats
 }
