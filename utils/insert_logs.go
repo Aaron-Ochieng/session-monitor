@@ -115,3 +115,14 @@ func InsertLogs(logs []LoginInfo, logsDate func()) {
 	logsDate()
 	db.Close()
 }
+
+
+func LastLogDate() (res string) {
+	db, _ := connection()
+	macAddress, _ := GetMacAddress()
+
+	db.QueryRowContext(context.Background(),
+		`SELECT date FROM lastInsertDate WHERE macAddress = ?`,
+		macAddress).Scan(&res)
+	return res
+}
