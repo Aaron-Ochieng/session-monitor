@@ -1,24 +1,24 @@
 package session
 
 import (
-	"strconv"
-	"strings"
+	"fmt"
 	"time"
 )
 
-func GetDate() string {
-	currentDate := time.Now()
-
-	// Define the desired format
-	format := "02 Jan 2006"
-
-	// Format the current date
-	return currentDate.Format(format)
+func PreviousDate() string {
+	currentTime := time.Now()
+	return currentTime.AddDate(0, 0, -1).Format("2 Jan 2004")
 }
 
-func GetTodaysDate(s string) int {
-	val := strings.Split(GetDate(), " ")
+func CurrentDate() string {
+	return time.Now().Format("2 Jan 2006")
+}
 
-	date, _ := strconv.Atoi(val[0])
-	return date
+func LogRange(arrLogs []LoginInfo) (logs []LoginInfo) {
+	for _, logInfo := range arrLogs {
+		if logInfo.Date == "7 Aug 2024" {
+			fmt.Println("OK")
+		}
+	}
+	return logs
 }
