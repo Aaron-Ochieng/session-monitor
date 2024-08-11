@@ -78,3 +78,15 @@ READ:
 	db.Close()
 	return res
 }
+
+func userId(username string) (id int) {
+	db, _ = connection()
+	err := db.QueryRowContext(
+		context.Background(),
+		`SELECT id FROM users WHERE username = ? ;`, username,
+	).Scan(&id)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return id
+}
