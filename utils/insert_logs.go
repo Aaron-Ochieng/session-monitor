@@ -35,7 +35,7 @@ func InitDbTables() error {
 			
 		);
 		CREATE TABLE IF NOT EXISTS userlogs(
-      id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+      		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 			macAddress VARCHAR(20) NOT NULL,
 			userId INTEGER NOT NULL,
 			date VARCHAR(11),
@@ -44,10 +44,10 @@ func InitDbTables() error {
 			FOREIGN KEY (userId) REFERENCES users(id)
 		);
 
-    CREATE TABLE IF NOT EXISTS lastInsertDate(
-      macAddress VARCHAR(20) NOT NULL PRIMARY KEY,
-      date VARCHAR(11)
-    );      
+		CREATE TABLE IF NOT EXISTS lastInsertDate(
+			macAddress VARCHAR(20) NOT NULL PRIMARY KEY,
+			date VARCHAR(11)
+		);      
 		`,
 	)
 	if err != nil {
@@ -125,4 +125,32 @@ func LastLogDate() (res string) {
 		`SELECT date FROM lastInsertDate WHERE macAddress = ?`,
 		macAddress).Scan(&res)
 	return res
+}
+
+func UpdateLastLogDate() {
+	db, _ := connection()
+	log_date := CurrentDate()
+	macAddress, _ := GetMacAddress()
+
+	_, err := db.ExecContext(context.Background(),
+		`UPDATE lastInsertDate SET date = ? WHERE macAddress = ?`,
+		log_date, macAddress,
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func InsertLastLogDate() {
+	db, _ := connection()
+	log_date := CurrentDate()
+	macAddress, _ := GetMacAddress()
+
+	_, err := db.ExecContext(context.Background(),
+		`INSERT INTO lastInsertDate (date, macAddress) VALUES (?,?)`,
+		log_date, macAddress,
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
