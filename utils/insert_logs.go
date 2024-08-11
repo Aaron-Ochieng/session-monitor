@@ -56,3 +56,25 @@ func InitDbTables() error {
 	return nil
 }
 
+func InitialUsernameInsert(logs []LoginInfo) bool {
+	res := false
+	db, _ = connection()
+	defer db.Close()
+READ:
+	file, err := os.ReadFile("session")
+	if err != nil {
+		os.Create("session")
+		res = true
+		goto READ
+	}
+	if file != nil {
+		for _, log := range logs {
+			db.ExecContext(
+				context.Background(),
+				`INSERT INTO users (username) VALUES (?)`, log.Username,
+			)
+		}
+	}
+	db.Close()
+	return res
+}
