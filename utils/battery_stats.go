@@ -19,7 +19,6 @@ func BatteryStatus() (stats BatStats) {
 		fmt.Println("Error executing command:", err)
 		return
 	}
-
 	res := strings.Split(string(output), "\n")
 
 	if len(res) == 4 {
