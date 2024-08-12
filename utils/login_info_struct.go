@@ -6,4 +6,5 @@ type LoginInfo struct {
 	LoginTime  string
 	LogoutTime string
 	DeviceId   string
+	Uptime     float64
 }
