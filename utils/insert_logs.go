@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
 	_ "modernc.org/sqlite"
 )
@@ -56,27 +55,22 @@ func InitDbTables() error {
 	return nil
 }
 
-func InitialUsernameInsert(logs []LoginInfo) bool {
-	res := false
-	db, _ = connection()
-	defer db.Close()
-READ:
-	file, err := os.ReadFile("session")
+func InsertUsername(logs []LoginInfo) {
+	db, err := connection()
 	if err != nil {
-		os.Create("session")
-		res = true
-		goto READ
+		log.Fatalln(err)
 	}
-	if file != nil {
-		for _, log := range logs {
-			db.ExecContext(
-				context.Background(),
-				`INSERT INTO users (username) VALUES (?)`, log.Username,
-			)
+	defer db.Close()
+	for _, log := range logs {
+		_, err = db.ExecContext(
+			context.Background(),
+			`INSERT INTO users (username) VALUES (?) ON 
+			CONFLICT (username) DO UPDATE SET username = excluded.username`, log.Username,
+		)
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
-	db.Close()
-	return res
 }
 
 func userId(username string) (id int) {
@@ -115,7 +109,6 @@ func InsertLogs(logs []LoginInfo, logsDate func()) {
 	logsDate()
 	db.Close()
 }
-
 
 func LastLogDate() (res string) {
 	db, _ := connection()
