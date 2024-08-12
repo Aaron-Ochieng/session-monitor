@@ -40,6 +40,7 @@ func InitDbTables() error {
 			date VARCHAR(11),
 			loginTime  VARCHAR(12) NOT NULL,
 			logoutTime VARCHAR(12),
+			hours REAL,
 			FOREIGN KEY (userId) REFERENCES users(id)
 		);
 
@@ -93,13 +94,14 @@ func InsertLogs(logs []LoginInfo, logsDate func()) {
 		_, err := db.ExecContext(
 			context.Background(),
 			`INSERT INTO userlogs
-      			(macAddress,userId,loginTime,logoutTime,date) 
-      			VALUES (?,?,?,?,?);`,
+      			(macAddress,userId,loginTime,logoutTime,date,hours) 
+      			VALUES (?,?,?,?,?,?,?);`,
 			macAddress,
 			userId,
 			log.LoginTime,
 			log.LogoutTime,
 			log.Date,
+			log.Uptime,
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -120,13 +122,13 @@ func LastLogDate() (res string) {
 	return res
 }
 
-func UpdateLastLogDate() {
+func InsertLogDate() {
 	db, _ := connection()
 	log_date := CurrentDate()
 	macAddress, _ := GetMacAddress()
 
 	_, err := db.ExecContext(context.Background(),
-		`UPDATE lastInsertDate SET date = ? WHERE macAddress = ?`,
+		`INSERT INTO lastInsertDate (date,macAddress) VALUES (?,?)`,
 		log_date, macAddress,
 	)
 	if err != nil {
@@ -134,13 +136,13 @@ func UpdateLastLogDate() {
 	}
 }
 
-func InsertLastLogDate() {
+func UpdateLogDate() {
 	db, _ := connection()
 	log_date := CurrentDate()
 	macAddress, _ := GetMacAddress()
 
 	_, err := db.ExecContext(context.Background(),
-		`INSERT INTO lastInsertDate (date, macAddress) VALUES (?,?)`,
+		`UPDATE lastInsertDate SET date = ? WHERE macAddress = ?`,
 		log_date, macAddress,
 	)
 	if err != nil {
