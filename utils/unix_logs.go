@@ -41,11 +41,13 @@ func UnixLog() (logininfo []LoginInfo, err error) {
 		if info[0] == "bocal" {
 			continue
 		}
+		hours, _ := convertToHours(info[9][1 : len(info[9])-1])
 		temp := LoginInfo{}
 		temp.Username = info[0]
 		temp.Date = info[5] + " " + info[4] + " " + strconv.Itoa(time.Now().Year())
 		temp.LoginTime = info[6]
 		temp.LogoutTime = info[8]
+		temp.Uptime = hours
 		if info[8] == "logged" {
 			temp.DeviceId = mac_address
 		}
