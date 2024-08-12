@@ -95,7 +95,7 @@ func InsertLogs(logs []LoginInfo, logsDate func()) {
 			context.Background(),
 			`INSERT INTO userlogs
       			(macAddress,userId,loginTime,logoutTime,date,hours) 
-      			VALUES (?,?,?,?,?,?,?);`,
+      			VALUES (?,?,?,?,?,?);`,
 			macAddress,
 			userId,
 			log.LoginTime,
