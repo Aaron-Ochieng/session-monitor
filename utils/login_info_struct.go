@@ -17,6 +17,11 @@ type UserLog struct {
 	User       *User   `pg:"rel:has-one,join_fk:userId"`
 }
 
+type LastInsertDate struct {
+	MacAddress string `pg:"macAddress,pk,autoincrement"`
+	Date       string `pg:"date"`
+}
+
 type LoginInfo struct {
 	Username   string
 	Date       string
