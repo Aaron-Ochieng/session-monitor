@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-const stateFilePath = "/var/tmp/session-monitor"
+const TempFilePath = "/var/tmp/session-monitor"
 
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
