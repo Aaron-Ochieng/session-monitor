@@ -32,6 +32,9 @@ func BatteryStatus() (stats BatStats) {
 		stats.TimetoEmpty = trimspace(res[1])[3] + " " + trimspace(res[1])[4]
 		stats.Percentage = trimspace(res[2])[1]
 
+	} else if len(res) == 3 {
+		stats.State = trimspace(res[0])[1]
+		stats.Percentage = trimspace(res[1])[1]
 	}
 	return stats
 }
