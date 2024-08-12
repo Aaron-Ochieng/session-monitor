@@ -35,3 +35,15 @@ func FirstLogs(logs []LoginInfo) []LoginInfo {
 }
 
 
+func InsertLog(is_first_insert bool) {
+	// check if its the first time to insert the log
+	logs, _ := UnixLog()
+
+	if is_first_insert {
+		first_logs := FirstLogs(logs)
+		InsertLogs(first_logs, InsertLogDate)
+		return
+	}
+	logs_to_insert := LogsToInsert(logs, from(logs), LastLogDate())
+	InsertLogs(logs_to_insert, UpdateLogDate)
+}
