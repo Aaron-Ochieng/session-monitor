@@ -91,42 +91,48 @@ func InsertUsername(logs []LoginInfo) {
 	}
 }
 
-func userId(username string) (id int) {
-	db, _ = connection()
-	err := db.QueryRowContext(
-		context.Background(),
-		`SELECT id FROM users WHERE username = ? ;`, username,
-	).Scan(&id)
+func InsertLogs(logs []LoginInfo, logsDate func()) {
+	db, err := connection()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	return id
-}
+	defer db.Close()
 
-func InsertLogs(logs []LoginInfo, logsDate func()) {
-	db, _ = connection()
-	macAddress, _ := GetMacAddress()
+	macAddress, err := GetMacAddress()
+	if err != nil {
+		fmt.Println("Error getting Mac address:", err)
+		return
+	}
+
 	for _, log := range logs {
-		userId := userId(log.Username)
-		_, err := db.ExecContext(
-			context.Background(),
-			`INSERT INTO userlogs
-      			(macAddress,userId,loginTime,logoutTime,date,hours)
-      			VALUES (?,?,?,?,?,?);`,
-			macAddress,
-			userId,
-			log.LoginTime,
-			log.LogoutTime,
-			log.Date,
-			log.Uptime,
-		)
+		user := &User{Username: log.Username}
+
+		// Fetch or create the user by username
+		_, err := db.Model(user).
+			Where("username = ?", log.Username).
+			OnConflict("DO NOTHING").
+			SelectOrInsert()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error selecting or inserting user:", err)
+			continue
 		}
 
+		userLog := &UserLog{
+			MacAddress: macAddress,
+			UserId:     user.ID, // Automatically get userId from the User struct
+			LoginTime:  log.LoginTime,
+			LogoutTime: log.LogoutTime,
+			Date:       log.Date,
+			Uptime:     log.Uptime,
+		}
+
+		_, err = db.Model(userLog).Insert()
+		if err != nil {
+			fmt.Println("Error inserting log:", err)
+		}
 	}
+
 	logsDate()
-	db.Close()
 }
 
 func LastLogDate() (res string) {
