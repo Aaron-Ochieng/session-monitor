@@ -34,7 +34,6 @@ func FirstLogs(logs []LoginInfo) []LoginInfo {
 	return logs[len(logs)-from+1:]
 }
 
-
 func InsertLog(is_first_insert bool) {
 	// check if its the first time to insert the log
 	logs, _ := UnixLog()
