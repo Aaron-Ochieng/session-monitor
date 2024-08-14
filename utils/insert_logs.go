@@ -1,7 +1,6 @@
 package session
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -189,15 +188,24 @@ func InsertLogDate() {
 }
 
 func UpdateLogDate() {
-	db, _ := connection()
-	log_date := CurrentDate()
-	macAddress, _ := GetMacAddress()
-
-	_, err := db.ExecContext(context.Background(),
-		`UPDATE lastInsertDate SET date = ? WHERE macAddress = ?`,
-		log_date, macAddress,
-	)
+	db, err := connection()
 	if err != nil {
 		log.Fatalln(err)
+	}
+	defer db.Close()
+
+	logDate := CurrentDate()
+	macAddress, err := GetMacAddress()
+	if err != nil {
+		fmt.Println("Error getting Mac address:", err)
+		return
+	}
+
+	_, err = db.Model(&LastInsertDate{}).
+		Set("date = ?", logDate).
+		Where("macAddress = ?", macAddress).
+		Update()
+	if err != nil {
+		log.Fatalln("Error updating last log date:", err)
 	}
 }
