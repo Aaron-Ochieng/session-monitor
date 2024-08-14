@@ -2,21 +2,44 @@ package session
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/go-pg/pg"
+	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
 
-var db *sql.DB
+var db *pg.DB
 
-func connection() (db *sql.DB, err error) {
-	db, err = sql.Open("sqlite", "./records.db")
+func connection() (db *pg.DB, err error) {
+	credentials := DatabaseCredentials{}
+	// Load environment variables from a .env file if it exists
+	err = godotenv.Load()
 	if err != nil {
-		fmt.Println(err)
-		return nil, nil
+		fmt.Println("Error loading .env file, using system environment variables instead")
 	}
+
+	// Retrieve connection details from environment variables
+	credentials.DB_USER = os.Getenv("DB_USER")
+	credentials.DB_PASSWORD = os.Getenv("DB_PASSWORD")
+	credentials.DB_NAME = os.Getenv("DB_NAME")
+	credentials.DB_ADDR = os.Getenv("DB_ADDR")
+
+	db = pg.Connect(&pg.Options{
+		User:     credentials.DB_USER,
+		Password: credentials.DB_PASSWORD,
+		Database: credentials.DB_NAME,
+		Addr:     credentials.DB_ADDR,
+	})
+
+	// Test the connection.
+	_, err = db.Exec("SELECT 1")
+	if err != nil {
+		return nil, err
+	}
+
 	return db, nil
 }
 
