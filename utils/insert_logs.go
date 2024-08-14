@@ -8,7 +8,6 @@ import (
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"github.com/joho/godotenv"
-	_ "modernc.org/sqlite"
 )
 
 var db *pg.DB
@@ -97,11 +96,7 @@ func InsertLogs(logs []LoginInfo, logsDate func()) {
 	}
 	defer db.Close()
 
-	macAddress, err := GetMacAddress()
-	if err != nil {
-		fmt.Println("Error getting Mac address:", err)
-		return
-	}
+	macAddress, _ := GetMacAddress()
 
 	for _, log := range logs {
 		user := &User{Username: log.Username}
@@ -149,7 +144,7 @@ func LastLogDate() (res string) {
 
 	lastInsertDate := &LastInsertDate{}
 	err = db.Model(lastInsertDate).
-		Where("macAddress = ?", macAddress).
+		Where("mac_address = ?", macAddress).
 		Select()
 	if err != nil {
 		fmt.Println("Error fetching last log date:", err)
@@ -167,11 +162,7 @@ func InsertLogDate() {
 	defer db.Close()
 
 	logDate := CurrentDate()
-	macAddress, err := GetMacAddress()
-	if err != nil {
-		fmt.Println("Error getting Mac address:", err)
-		return
-	}
+	macAddress, _ := GetMacAddress()
 
 	lastInsertDate := &LastInsertDate{
 		MacAddress: macAddress,
@@ -179,8 +170,6 @@ func InsertLogDate() {
 	}
 
 	_, err = db.Model(lastInsertDate).
-		OnConflict("(macAddress) DO UPDATE").
-		Set("date = EXCLUDED.date").
 		Insert()
 	if err != nil {
 		log.Fatalln("Error inserting or updating last log date:", err)
@@ -195,15 +184,11 @@ func UpdateLogDate() {
 	defer db.Close()
 
 	logDate := CurrentDate()
-	macAddress, err := GetMacAddress()
-	if err != nil {
-		fmt.Println("Error getting Mac address:", err)
-		return
-	}
+	macAddress, _ := GetMacAddress()
 
 	_, err = db.Model(&LastInsertDate{}).
 		Set("date = ?", logDate).
-		Where("macAddress = ?", macAddress).
+		Where("mac_address = ?", macAddress).
 		Update()
 	if err != nil {
 		log.Fatalln("Error updating last log date:", err)
