@@ -136,13 +136,28 @@ func InsertLogs(logs []LoginInfo, logsDate func()) {
 }
 
 func LastLogDate() (res string) {
-	db, _ := connection()
-	macAddress, _ := GetMacAddress()
+	db, err := connection()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer db.Close()
 
-	db.QueryRowContext(context.Background(),
-		`SELECT date FROM lastInsertDate WHERE macAddress = ?`,
-		macAddress).Scan(&res)
-	return res
+	macAddress, err := GetMacAddress()
+	if err != nil {
+		fmt.Println("Error getting Mac address:", err)
+		return ""
+	}
+
+	lastInsertDate := &LastInsertDate{}
+	err = db.Model(lastInsertDate).
+		Where("macAddress = ?", macAddress).
+		Select()
+	if err != nil {
+		fmt.Println("Error fetching last log date:", err)
+		return ""
+	}
+
+	return lastInsertDate.Date
 }
 
 func InsertLogDate() {
