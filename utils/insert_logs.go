@@ -75,12 +75,16 @@ func InsertUsername(logs []LoginInfo) {
 		log.Fatalln(err)
 	}
 	defer db.Close()
+
 	for _, log := range logs {
-		_, err = db.ExecContext(
-			context.Background(),
-			`INSERT INTO users (username) VALUES (?) ON 
-			CONFLICT (username) DO UPDATE SET username = excluded.username`, log.Username,
-		)
+		user := &User{
+			Username: log.Username,
+		}
+
+		_, err := db.Model(user).
+			OnConflict("(username) DO UPDATE").
+			Set("username = EXCLUDED.username").
+			Insert()
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -107,7 +111,7 @@ func InsertLogs(logs []LoginInfo, logsDate func()) {
 		_, err := db.ExecContext(
 			context.Background(),
 			`INSERT INTO userlogs
-      			(macAddress,userId,loginTime,logoutTime,date,hours) 
+      			(macAddress,userId,loginTime,logoutTime,date,hours)
       			VALUES (?,?,?,?,?,?);`,
 			macAddress,
 			userId,
