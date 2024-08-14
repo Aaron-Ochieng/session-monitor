@@ -161,16 +161,30 @@ func LastLogDate() (res string) {
 }
 
 func InsertLogDate() {
-	db, _ := connection()
-	log_date := CurrentDate()
-	macAddress, _ := GetMacAddress()
-
-	_, err := db.ExecContext(context.Background(),
-		`INSERT INTO lastInsertDate (date,macAddress) VALUES (?,?)`,
-		log_date, macAddress,
-	)
+	db, err := connection()
 	if err != nil {
 		log.Fatalln(err)
+	}
+	defer db.Close()
+
+	logDate := CurrentDate()
+	macAddress, err := GetMacAddress()
+	if err != nil {
+		fmt.Println("Error getting Mac address:", err)
+		return
+	}
+
+	lastInsertDate := &LastInsertDate{
+		MacAddress: macAddress,
+		Date:       logDate,
+	}
+
+	_, err = db.Model(lastInsertDate).
+		OnConflict("(macAddress) DO UPDATE").
+		Set("date = EXCLUDED.date").
+		Insert()
+	if err != nil {
+		log.Fatalln("Error inserting or updating last log date:", err)
 	}
 }
 
