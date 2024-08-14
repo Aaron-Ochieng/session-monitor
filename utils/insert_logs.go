@@ -10,8 +10,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var db *pg.DB
-
 func connection() (db *pg.DB, err error) {
 	credentials := DatabaseCredentials{}
 	// Load environment variables from a .env file if it exists
